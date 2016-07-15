@@ -28,7 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.Application;
 import play.GlobalSettings;
-import play.libs.WS;
+///import play.libs.WS;
+import play.libs.ws.*;
+import play.libs.ws.WS;
 import play.test.FakeApplication;
 
 import static common.DBTestUtil.*;
@@ -52,7 +54,7 @@ import static play.test.Helpers.testServer;
 public class RestAPITest {
 
   private static final Logger logger = LoggerFactory.getLogger(RestAPITest.class);
-  private static FakeApplication fakeApp;
+  private static Application fakeApp;
 
   @Before
   public void setup() {
@@ -89,14 +91,18 @@ public class RestAPITest {
   public void testrestAppResult() {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
       public void run() {
+    	  try {
         populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_APP_RESULT_PATH).
+        final WSResponse response = WS.url(BASE_URL + REST_APP_RESULT_PATH).
             setQueryParameter("id", TEST_JOB_ID1).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+            get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
         final JsonNode jsonResponse = response.asJson();
         assertTrue("Job id did not match", TEST_JOB_ID1.equals(jsonResponse.path("id").asText()));
         assertTrue("Job name did not match", TEST_JOB_NAME.equals(jsonResponse.path("name").asText()));
         assertTrue("Job type did not match", TEST_JOB_TYPE.equals(jsonResponse.path("jobType").asText()));
+       } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+       }
       }
     });
   }
@@ -117,13 +123,17 @@ public class RestAPITest {
   public void testrestJobExecResult() {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
       public void run() {
+    	  try {
         populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_JOB_EXEC_RESULT_PATH).
+        final WSResponse response = WS.url(BASE_URL + REST_JOB_EXEC_RESULT_PATH).
             setQueryParameter("id", TEST_JOB_EXEC_ID1).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+            get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
         final JsonNode jsonResponse = response.asJson().get(0);
         assertTrue("Job id did not match", TEST_JOB_ID1.equals(jsonResponse.path("id").asText()));
         assertTrue("Job execution id did not match", TEST_JOB_EXEC_ID1.equals(jsonResponse.path("jobExecId").asText()));
+       } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+       }
       }
     });
   }
@@ -141,17 +151,21 @@ public class RestAPITest {
    * </p>
    */
   @Test
-  public void testrestFlowExecResult() {
+  public void testrestFlowExecResult()  {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
-      public void run() {
+      public void run()  {
+       try {
         populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_FLOW_EXEC_RESULT_PATH).
+        final WSResponse response = WS.url(BASE_URL + REST_FLOW_EXEC_RESULT_PATH).
             setQueryParameter("id", TEST_FLOW_EXEC_ID1).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+            get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
         final JsonNode jsonResponse = response.asJson();
         assertTrue("Job id did not match", TEST_JOB_ID1.equals(jsonResponse.findValue("id").asText()));
         assertTrue("Flow execution id did not match",
             TEST_FLOW_EXEC_ID1.equals(jsonResponse.findValue("flowExecId").asText()));
+       } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+       }
       }
     });
   }
@@ -172,12 +186,16 @@ public class RestAPITest {
   public void testrestSearch() {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
       public void run() {
-        populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_SEARCH_PATH).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
-        List<String> jobList = response.asJson().findValuesAsText("id");
-        assertTrue("Job id1 missing in list", jobList.contains(TEST_JOB_ID1));
-        assertTrue("Job id2 missing in list", jobList.contains(TEST_JOB_ID2));
+  	    try {
+          populateTestData();
+           final WSResponse response = WS.url(BASE_URL + REST_SEARCH_PATH).
+               get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+           List<String> jobList = response.asJson().findValuesAsText("id");
+           assertTrue("Job id1 missing in list", jobList.contains(TEST_JOB_ID1));
+           assertTrue("Job id2 missing in list", jobList.contains(TEST_JOB_ID2));
+         } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+         }
       }
     });
   }
@@ -200,17 +218,21 @@ public class RestAPITest {
   public void testrestSearchWithUsernameAndJobType() {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
       public void run() {
+       try {
         populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_SEARCH_PATH).
+        final WSResponse response = WS.url(BASE_URL + REST_SEARCH_PATH).
             setQueryParameter("username", TEST_USERNAME).
             setQueryParameter("", TEST_JOB_TYPE).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+            get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
         JsonNode reponseJson = response.asJson();
         List<String> jobList = reponseJson.findValuesAsText("id");
         assertTrue("More than one row returned", jobList.size() == 1);
         assertTrue("Job id missing in response", TEST_JOB_ID1.equals(reponseJson.findValue("id").asText()));
         assertTrue("Username incorrect", TEST_USERNAME.equals(reponseJson.findValue("username").asText()));
         assertTrue("Job type incorrect", TEST_JOB_TYPE.equals(reponseJson.findValue("jobType").asText()));
+       } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+       }
       }
     });
   }
@@ -228,12 +250,16 @@ public class RestAPITest {
   public void testrestCompare() {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
       public void run() {
+       try {
         populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_COMPARE_PATH).
+        final WSResponse response = WS.url(BASE_URL + REST_COMPARE_PATH).
             setQueryParameter("flow-exec-id1", TEST_FLOW_EXEC_ID1).
             setQueryParameter("flow-exec-id2", TEST_FLOW_EXEC_ID2).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+            get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
         assertTrue("Job id did not match", TEST_JOB_ID2.equals(response.asJson().findValue("id").asText()));
+       } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+       }
       }
     });
   }
@@ -252,13 +278,17 @@ public class RestAPITest {
   public void testrestFlowGraphData() {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
       public void run() {
+       try {
         populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_FLOW_GRAPH_DATA_PATH).
+        final WSResponse response = WS.url(BASE_URL + REST_FLOW_GRAPH_DATA_PATH).
             setQueryParameter("id", TEST_FLOW_DEF_ID1).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+            get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
         List<String> jobList = response.asJson().findValuesAsText("jobexecurl");
         assertTrue("Job exec url1 missing in list", jobList.contains(TEST_JOB_EXEC_ID1));
         assertTrue("Job exec url2 missing in list", jobList.contains(TEST_JOB_EXEC_ID2));
+       } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+       }
       }
     });
   }
@@ -277,13 +307,17 @@ public class RestAPITest {
   public void testrestJobGraphData() {
     running(testServer(TEST_SERVER_PORT, fakeApp), new Runnable() {
       public void run() {
+       try {
         populateTestData();
-        final WS.Response response = WS.url(BASE_URL + REST_JOB_GRAPH_DATA_PATH).
+        final WSResponse response = WS.url(BASE_URL + REST_JOB_GRAPH_DATA_PATH).
             setQueryParameter("id", TEST_JOB_DEF_ID1).
-            get().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+            get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
         List<String> jobList = response.asJson().findValuesAsText("stageid");
         assertTrue("Job id 1 missing in list", jobList.contains(TEST_JOB_ID1));
         assertTrue("Job id 2 missing in list", jobList.contains(TEST_JOB_ID2));
+       } catch(Exception exc) {
+    	   throw new RuntimeException(exc);
+       }
       }
     });
   }

@@ -14,7 +14,7 @@
 // the License.
 //
 
-import play.Project._
+import play.sbt.PlayImport._
 import sbt._
 
 object Dependencies {
@@ -31,12 +31,12 @@ object Dependencies {
   lazy val HADOOP_VERSION = "hadoopversion"
   lazy val SPARK_VERSION = "sparkversion"
 
-  var hadoopVersion = "2.3.0"
+  var hadoopVersion = "2.6.0"
   if (System.getProperties.getProperty(HADOOP_VERSION) != null) {
     hadoopVersion = System.getProperties.getProperty(HADOOP_VERSION)
   }
 
-  var sparkVersion = "1.4.0"
+  var sparkVersion = "1.5.2"
   if (System.getProperties.getProperty(SPARK_VERSION) != null) {
     sparkVersion = System.getProperties.getProperty(SPARK_VERSION)
   }
@@ -74,6 +74,8 @@ object Dependencies {
     "org.jmockit" % "jmockit" % "1.23" % Test
   ) :+ sparkExclusion 
 
-  var dependencies = Seq(javaJdbc, javaEbean, cache)
+  ///var dependencies = Seq(javaJdbc, javaEbean, cache)
+  var dependencies = Seq(javaJdbc, cache, javaWs)
+  ///var dependencies = Seq[ModuleID]()
   dependencies ++= requiredDep
 }

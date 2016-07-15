@@ -21,8 +21,9 @@ import models.AppResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import play.api.mvc.Content;
-import play.test.FakeApplication;
+///import play.api.mvc.Content;
+import play.twirl.api.Content;
+///import play.test.FakeApplication;
 import play.test.Helpers;
 import views.html.page.homePage;
 import views.html.results.searchResults;
@@ -53,7 +54,7 @@ public class ApplicationTest {
     assertTrue(html.body().contains("Latest analysis"));
   }
 
-  public static FakeApplication app;
+  public static play.Application app;
 
   @BeforeClass
   public static void startApp() {

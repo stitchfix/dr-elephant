@@ -26,6 +26,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import play.Application;
 import play.test.FakeApplication;
 import play.test.Helpers;
 
@@ -34,7 +35,8 @@ import static org.junit.Assert.assertEquals;
 
 public class InfoExtractorTest {
 
-  private FakeApplication app;
+  ///private FakeApplication app;
+  private Application app;
 
   @Before
   public void startApp() throws Exception {

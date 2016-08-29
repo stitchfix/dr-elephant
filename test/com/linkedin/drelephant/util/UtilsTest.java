@@ -45,6 +45,60 @@ public class UtilsTest {
   }
 
   @Test
+  public void testParseJavaOptionsWithSystemProps() {
+   String sysProps = "-Dlog4j.configuration=file:///etc/spark/conf/log4j.properties -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:MaxHeapFreeRatio=70 -XX:-CMSClassUnloadingEnabled -XX:MaxPermSize=512M -XX:OnOutOfMemoryError='kill -9 %p'";
+
+    Map<String, String> options1 = Utils.parseJavaOptions(sysProps);
+    assertEquals(7, options1.size());
+    assertEquals("file:///etc/spark/conf/log4j.properties", options1.get("log4j.configuration"));
+    assertEquals("true", options1.get("UseConcMarkSweepGC"));
+    assertEquals("false", options1.get("CMSClassUnloadingEnabled"));
+    assertEquals("70", options1.get("CMSInitiatingOccupancyFraction"));
+    assertEquals("512M", options1.get("MaxPermSize"));
+    assertEquals("kill -9 %p", options1.get("OnOutOfMemoryError"));
+
+  }
+  @Test
+  public void testJavaParamParser() {
+	 String[] props = ParamParser.parseJavaParam("-Dlog4j.configuration=file:///etc/spark/conf/log4j.properties");
+	 System.out.println(" PROP is " + props[0] + " == " + props[1]);
+	 
+	 assertEquals(props[0], "log4j.configuration");
+	 assertEquals(props[1], "file:///etc/spark/conf/log4j.properties");
+  }
+
+  @Test
+  public void testSysParamParser() {
+	 String[] props = ParamParser.parseJavaParam("-XX:MaxHeapFreeRatio=70");
+	 System.out.println(" PROP is " + props[0] + " == " + props[1]);
+	 
+	 assertEquals(props[0], "MaxHeapFreeRatio");
+	 assertEquals(props[1], "70");
+  }
+
+  @Test
+  public void testSysFlagParser() {
+	 String[] props = ParamParser.parseJavaParam("-XX:+UseConcMarkSweepGC");
+	 System.out.println(" PROP is " + props[0] + " == " + props[1]);
+	 
+	 assertEquals(props[0], "UseConcMarkSweepGC");
+	 assertEquals(props[1], "true");
+  }
+
+
+  @Test
+  public void testQuotedParser() {
+	 String[] props = ParamParser.parseJavaParam("-XX:OnOutOfMemoryError='kill -9 %p'");
+	 System.out.println(" PROP is " + props[0] + " == " + props[1]);
+	 
+	 assertEquals(props[0], "OnOutOfMemoryError");
+	 assertEquals(props[1], "kill -9 %p");
+  }
+
+
+
+
+  @Test
   public void testGetParam() {
     Map<String, String> paramMap = new HashMap<String, String>();
     paramMap.put("test_severity_1", "10, 50, 100, 200");

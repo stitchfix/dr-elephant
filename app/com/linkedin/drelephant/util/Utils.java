@@ -68,7 +68,8 @@ public final class Utils {
   public static Document loadXMLDoc(String filePath) {
     InputStream instream = null;
     logger.info("Loading configuration file " + filePath);
-    instream = Play.application().resourceAsStream(filePath);
+    ////instream = Play.application().resourceAsStream(filePath);
+    instream = Utils.class.getResourceAsStream("/" + filePath);
 
     if (instream == null) {
       logger.info("Configuation file not present in classpath. File:  " + filePath);
@@ -99,25 +100,44 @@ public final class Utils {
    * @return A map of options
    */
   public static Map<String, String> parseJavaOptions(String str) {
+	  return ParamParser.parseJavaOptions(str);
+	  /**
     Map<String, String> options = new HashMap<String, String>();
+    ////Pattern argPattern = 
     String[] tokens = str.trim().split("\\s");
     for (String token : tokens) {
       if (token.isEmpty()) {
         continue;
       }
       if (!token.startsWith("-D")) {
-        throw new IllegalArgumentException(
-            "Cannot parse java option string [" + str + "]. Some options does not begin with -D prefix.");
-      }
-      String[] parts = token.substring(2).split("=", 2);
-      if (parts.length != 2) {
-        throw new IllegalArgumentException(
-            "Cannot parse java option string [" + str + "]. The part [" + token + "] does not contain a =.");
-      }
+    	  //// XXX 
+    	  ////  Need to handle -XX: options as well 
+    	  //// Not sure if we want to pass them in 
+    	  System.out.println("TOKEN = " + token);
+    	if(token.startsWith("-XX:")) {
 
-      options.put(parts[0], parts[1]);
+    		String sysPropToken = token.substring( 4);
+    	    if(sysPropToken.contains("=")) {
+              String[] parts = token.substring(2).split("=", 2);
+              options.put(parts[0], parts[1]);
+    	    } else {
+    	      options.put(sysPropToken,"true");
+    	    }
+    	} else {
+          throw new IllegalArgumentException(
+            "Cannot parse java option string [" + str + "]. Some options does not begin with -D prefix.");
+    	}
+      } else {
+        String[] parts = token.substring(2).split("=", 2);
+        if (parts.length != 2) {
+          throw new IllegalArgumentException(
+            "Cannot parse java option string [" + str + "]. The part [" + token + "] does not contain a =.");
+        }
+        options.put(parts[0], parts[1]);
+      }
     }
     return options;
+    **/
   }
 
   /**

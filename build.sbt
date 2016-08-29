@@ -14,7 +14,6 @@
 // the License.
 //
 
-///import play.Project._
 import Dependencies._
 
 name := "dr-elephant"
@@ -27,6 +26,8 @@ javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6")
 ////javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.8")
 
 scalaVersion := "2.11.7"
+ ////Spark is 2.10, but play needs to be 2.11
+////scalaVersion := "2.10.5"
 
 routesGenerator := StaticRoutesGenerator
 
@@ -38,5 +39,9 @@ ivyConfigurations += config("compileonly").hide
 // Append all dependencies with 'compileonly' configuration to unmanagedClasspath in Compile.
 unmanagedClasspath in Compile ++= update.value.select(configurationFilter("compileonly"))
 
+unmanagedClasspath in Test += baseDirectory.value / "test" / "resources"
+
 enablePlugins(PlayJava)
+disablePlugins(PlayLogback)
 enablePlugins(PlayEbean)
+

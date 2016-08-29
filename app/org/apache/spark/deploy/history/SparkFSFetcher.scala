@@ -47,6 +47,7 @@ import org.codehaus.jackson.JsonNode
 import org.codehaus.jackson.map.ObjectMapper
 
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.JavaConversions._
 
 
 /**
@@ -69,9 +70,17 @@ class SparkFSFetcher(fetcherConfData: FetcherConfigurationData) extends Elephant
   }
   logger.info("The event log limit of Spark application is set to " + confEventLogSizeInMb + " MB")
 
-  var confEventLogDir = fetcherConfData.getParamMap.get(LOG_DIR_XML_FIELD)
-  if (confEventLogDir == null || confEventLogDir.isEmpty) {
-    confEventLogDir = defEventLogDir
+  val confEventLogDir = {
+     logger.info(s"  Getting Conf DAta PAram Map ... Data is  ${fetcherConfData.getParamMap.size} elements ")
+     fetcherConfData.getParamMap.foreach( {case(k,v) => {
+         logger.info(s"       FetcherConf Param ${k} == ${v} ") 
+     }})
+     val mapVal = fetcherConfData.getParamMap.get(LOG_DIR_XML_FIELD)
+     if (mapVal == null || mapVal.isEmpty) {
+         defEventLogDir
+     } else {
+       mapVal
+     }
   }
   logger.info("The event log directory of Spark application is set to " + confEventLogDir)
 
@@ -111,9 +120,10 @@ class SparkFSFetcher(fetcherConfData: FetcherConfigurationData) extends Elephant
     }
 
     // if we couldn't find the namenode address in fetcherconf, try to find it in hadoop configuration.
-    var isHAEnabled: Boolean = false;
-    if (conf.get(NAME_SERVICES) != null) {
-      isHAEnabled = true;
+    val isHAEnabled: Boolean = if (conf.get(NAME_SERVICES) != null) {
+       true;
+    } else {
+      false
     }
 
     // check if HA is enabled
@@ -256,11 +266,19 @@ class SparkFSFetcher(fetcherConfData: FetcherConfigurationData) extends Elephant
           logger.info("The event log of Spark application: " + appId + " is over the limit size of "
               + defEventLogSizeInMb + " MB, the parsing process gets throttled.")
         } else {
-          logger.info("Replaying Spark logs for application: " + appId)
+          try {
+             logger.info("Replaying Spark logs for application: " + appId)
 
-          replayBus.replay(logInput, logPath.toString(), false)
+             replayBus.replay(logInput, logPath.toString(), false)
 
-          logger.info("Replay completed for application: " + appId)
+             logger.info("Replay completed for application: " + appId)
+          } catch {
+             //// Something went wrong !!!
+            case unexpected : Throwable => {
+               logger.error(s" Unexpected error while replaying on the replay bus ${unexpected.getMessage} ", unexpected)
+               unexpected.printStackTrace(System.out)
+            }
+          }
         }
 
         dataCollection
@@ -337,9 +355,10 @@ class SparkFSFetcher(fetcherConfData: FetcherConfigurationData) extends Elephant
 private object SparkFSFetcher {
   private val logger = Logger.getLogger(SparkFSFetcher.getClass)
 
-  var defEventLogDir = "/system/spark-history"
-  var defEventLogSizeInMb = 100d; // 100MB
-  var defSparkLogExt = "_1.snappy"
+  ////val defEventLogDir = "/system/spark-history"
+  val defEventLogDir = "/var/log/spark/apps"
+  val defEventLogSizeInMb = 100d; // 100MB
+  val defSparkLogExt = "_1.snappy"
 
   val LOG_SIZE_XML_FIELD = "event_log_size_limit_in_mb"
   val LOG_DIR_XML_FIELD = "event_log_dir"

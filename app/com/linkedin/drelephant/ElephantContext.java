@@ -106,7 +106,8 @@ public class ElephantContext {
     _fetchersConfData = new FetcherConfiguration(document.getDocumentElement()).getFetchersConfigurationData();
     for (FetcherConfigurationData data : _fetchersConfData) {
       try {
-        Class<?> fetcherClass = Play.current().classloader().loadClass(data.getClassName());
+        ///Class<?> fetcherClass = Play.current().classloader().loadClass(data.getClassName());
+        Class<?> fetcherClass = ElephantContext.class.getClassLoader().loadClass(data.getClassName());
         Object instance = fetcherClass.getConstructor(FetcherConfigurationData.class).newInstance(data);
         if (!(instance instanceof ElephantFetcher)) {
           throw new IllegalArgumentException(
@@ -170,6 +171,7 @@ public class ElephantContext {
         throw new RuntimeException("Could not access constructor for class" + data.getClassName(), e);
       } catch (RuntimeException e) {
         // More descriptive on other runtime exception such as ClassCastException
+    	  e.printStackTrace();
         throw new RuntimeException(data.getClassName() + " is not a valid Heuristic class.", e);
       } catch (InvocationTargetException e) {
         throw new RuntimeException("Could not invoke class " + data.getClassName(), e);

@@ -53,6 +53,7 @@ class SparkDataCollection(applicationEventListener: ApplicationEventListener,
                           executorsListener: ExecutorsListener,
                           storageListener: StorageListener,
                           storageStatusTrackingListener: StorageStatusTrackingListener) extends SparkApplicationData {
+  //// XXX Make immutable, and get rid of vars ...
   private var _applicationData: SparkGeneralData = null;
   private var _jobProgressData: SparkJobProgressData = null;
   private var _environmentData: SparkEnvironmentData = null;

@@ -16,19 +16,18 @@
 
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
 import javax.persistence.Table;
 
+import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import play.db.ebean.Model;
+///import play.db.ebean.Model;
 
 
 @Entity
@@ -43,11 +42,16 @@ public class AppHeuristicResultDetails extends Model {
 
   public static class TABLE {
     public static final String TABLE_NAME = "yarn_app_heuristic_result_details";
+    public static final String ID = "id";
     public static final String APP_HEURISTIC_RESULT_ID = "yarnAppHeuristicResult";
     public static final String NAME = "name";
     public static final String VALUE = "value";
     public static final String DETAILS = "details";
   }
+
+  @JsonIgnore
+  @Id
+  public int id;
 
   @JsonBackReference
   @ManyToOne(cascade = CascadeType.ALL)

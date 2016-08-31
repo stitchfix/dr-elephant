@@ -16,6 +16,10 @@
 
 package com.linkedin.drelephant;
 
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.Model;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.linkedin.drelephant.analysis.AnalyticJob;
 import com.linkedin.drelephant.analysis.AnalyticJobGenerator;
 import com.linkedin.drelephant.analysis.HDFSContext;
@@ -24,6 +28,7 @@ import com.linkedin.drelephant.analysis.AnalyticJobGeneratorHadoop2;
 
 import com.linkedin.drelephant.security.HadoopSecurity;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -33,6 +38,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.linkedin.drelephant.util.Utils;
+
+import models.AppHeuristicResult;
+import models.AppHeuristicResultDetails;
 import models.AppResult;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -152,6 +160,10 @@ public class ElephantRunner implements Runnable {
     } catch (Exception e) {
       logger.error(e.getMessage());
       logger.error(ExceptionUtils.getStackTrace(e));
+    } catch (Error e) {
+      logger.error(e.getMessage());
+      logger.error(ExceptionUtils.getStackTrace(e));
+      throw e;
     }
   }
 
@@ -174,13 +186,35 @@ public class ElephantRunner implements Runnable {
           logger.info("Executor thread " + _threadId + " analyzing " + analyticJob.getAppType().getName() + " "
               + analyticJob.getAppId());
           AppResult result = analyticJob.getAnalysis();
-          result.save();
+          logger.info("Executor thread ::  ID = " + result.id + " Analysis = " + result.name + " :: "  + result.jobName + " :: " + result.username);
+          Method ebeanInterceptMethod = AppResult.class.getMethod("_ebean_getIntercept");
+          Object ebiObj = ebeanInterceptMethod.invoke(result);
+          logger.info(" E BEAN INTERCEPT = " + ebiObj );
+          EntityBeanIntercept ebi = (EntityBeanIntercept)ebiObj;
+        
+          logger.info(" IS NEW " + ebi.isNew() + " IS DIRTY " + ebi.isDirty() + " DIRTY PROP NAMES " + ebi.getDirtyPropertyNames());
+          for( AppHeuristicResult ahr : result.yarnAppHeuristicResults) {
+        	 logger.info(" AHR = " + ahr.id + " :: " + ahr.heuristicName + " :: " + ahr.heuristicClass);
+        	 for( AppHeuristicResultDetails detail : ahr.yarnAppHeuristicResultDetails) {
+        		logger.info( "   AHR DETAIL " + detail.name + " :: " + detail.value  + " :: " + detail.details ) ;
+        	 }
+        	 //// XXXX TRY CLEARING OUT DETAILS
+        	 ahr.yarnAppHeuristicResultDetails.clear();
+          }
+
+          
+          result.save(); 
+          logger.info("Executor thread :: Saved Result :: Analysis = " + result.name + " :: "  + result.jobName + " :: " + result.username);
 
         } catch (InterruptedException ex) {
           Thread.currentThread().interrupt();
-        } catch (Exception e) {
+        } catch (Throwable e) {
           logger.error(e.getMessage());
           logger.error(ExceptionUtils.getStackTrace(e));
+          if(e.getCause() != null) {
+        	  logger.error(e.getCause().getMessage());
+              logger.error(ExceptionUtils.getStackTrace(e.getCause()));
+          }
 
           if (analyticJob != null && analyticJob.retry()) {
             logger.error("Add analytic job id [" + analyticJob.getAppId() + "] into the retry list.");

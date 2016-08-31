@@ -82,6 +82,7 @@ object Dependencies {
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion % "compileonly",
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion % Test,
     "org.codehaus.jackson" % "jackson-mapper-asl" % jacksonMapperAslVersion,
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.2",
     "org.jsoup" % "jsoup" % jsoupVersion,
     "com.lihaoyi" %% "fastparse" % "0.3.7",
     "org.mockito" % "mockito-core" % "1.10.19",

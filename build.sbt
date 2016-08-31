@@ -45,3 +45,6 @@ enablePlugins(PlayJava)
 disablePlugins(PlayLogback)
 enablePlugins(PlayEbean)
 
+playEbeanModels in Compile := Seq("models.*")
+
+playEbeanDebugLevel := 4

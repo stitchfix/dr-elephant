@@ -34,14 +34,14 @@ public class ElephantContextTest {
    *  Test instantiating an ElephantContext
    */
 	/// UGGGGHHH !!!! Java Play code
-  ////@Test
+  ///@Test
   public void testCreateContext() {
 	  ElephantContext ctxt =  ElephantContext.instance();
   }
 
   ///@Test
   public void testGetSparkFetcher() {
-	  File conf = new File("./conf/application.conf");
+	  File conf = new File("./test/resources/application.conf");
 	  Application fakeApp = new FakeApplication(conf,this.getClass().getClassLoader(), new java.util.HashMap()  );
 	  ////Play.start(fakeApp);
 

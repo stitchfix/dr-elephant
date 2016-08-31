@@ -128,6 +128,7 @@ public class RestAPITest {
         final WSResponse response = WS.url(BASE_URL + REST_JOB_EXEC_RESULT_PATH).
             setQueryParameter("id", TEST_JOB_EXEC_ID1).
             get().toCompletableFuture().get(RESPONSE_TIMEOUT, TimeUnit.MILLISECONDS);
+        System.out.println(" RESPONSE " + response.getBody()  );
         final JsonNode jsonResponse = response.asJson().get(0);
         assertTrue("Job id did not match", TEST_JOB_ID1.equals(jsonResponse.path("id").asText()));
         assertTrue("Job execution id did not match", TEST_JOB_EXEC_ID1.equals(jsonResponse.path("jobExecId").asText()));

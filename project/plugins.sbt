@@ -26,4 +26,5 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % Option(System.getProperty("pla
 addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.6")
 
 /// EBean moved to a new plugin
-addSbtPlugin("com.typesafe.sbt" % "sbt-play-ebean" % "1.0.0")
+///addSbtPlugin("com.typesafe.sbt" % "sbt-play-ebean" % "1.0.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-play-ebean" % "3.0.0")
